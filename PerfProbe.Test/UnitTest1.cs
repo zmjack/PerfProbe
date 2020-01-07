@@ -56,13 +56,13 @@ PerfProbe\tat  .+?\t\(Thread:\d+\)
             var content = File.ReadAllText(file);
 
             Assert.True(content.IsMatch(new Regex(@"PerfProbe\tat  .+?\t\(Thread:\d+\)
-  File:	.+?PerfProbe.Test\\UnitTest1.cs\tLines:\[48,50\)
+  File:	.+?PerfProbe.Test\\UnitTest1.cs\tLines:\[50,52\)
   Caller:\tFileTest\tElapsed Time:\t.+?
   Carry Object:\t.*?
   Run Under:\t.*?
 
 PerfProbe\tat  .+?\t\(Thread:\d+\)
-  File:	.+?PerfProbe.Test\\UnitTest1.cs\tLines:\[50,52\)
+  File:	.+?PerfProbe.Test\\UnitTest1.cs\tLines:\[52,54\)
   Caller:\tFileTest\tElapsed Time:\t.+?
   Carry Object:\t.*?
   Run Under:\t.*?
