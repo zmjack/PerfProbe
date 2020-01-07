@@ -25,13 +25,15 @@ namespace PerfProbe.Test
 
                 Assert.True(output.IsMatch(new Regex(@"PerfProbe\tat  .+?\t\(Thread:\d+\)
   File:	.+?PerfProbe.Test\\UnitTest1.cs\tLines:\[18,20\)
-  Caller:\tConsoleTest\tElapsedTime:\t.+? ms
-  CarryObject:\t
+  Caller:\tConsoleTest\tElapsed Time:\t.+?
+  Carry Object:\t.*?
+  Run Under:\t.*?
 
 PerfProbe\tat  .+?\t\(Thread:\d+\)
   File:	.+?PerfProbe.Test\\UnitTest1.cs\tLines:\[20,22\)
-  Caller:\tConsoleTest\tElapsedTime:\t.+? ms
-  CarryObject:\t
+  Caller:\tConsoleTest\tElapsed Time:\t.+?
+  Carry Object:\t.*?
+  Run Under:\t.*?
 
 ")));
             }
@@ -55,13 +57,15 @@ PerfProbe\tat  .+?\t\(Thread:\d+\)
 
             Assert.True(content.IsMatch(new Regex(@"PerfProbe\tat  .+?\t\(Thread:\d+\)
   File:	.+?PerfProbe.Test\\UnitTest1.cs\tLines:\[48,50\)
-  Caller:\tFileTest\tElapsedTime:\t.+? ms
-  CarryObject:\t
+  Caller:\tFileTest\tElapsed Time:\t.+?
+  Carry Object:\t.*?
+  Run Under:\t.*?
 
 PerfProbe\tat  .+?\t\(Thread:\d+\)
   File:	.+?PerfProbe.Test\\UnitTest1.cs\tLines:\[50,52\)
-  Caller:\tFileTest\tElapsedTime:\t.+? ms
-  CarryObject:\t
+  Caller:\tFileTest\tElapsed Time:\t.+?
+  Carry Object:\t.*?
+  Run Under:\t.*?
 
 ")));
         }

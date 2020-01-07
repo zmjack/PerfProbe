@@ -59,8 +59,9 @@ namespace PerfProbe
             return
                 $"PerfProbe\tat  {now}\t(Thread:{threadId}){Environment.NewLine}" +
                 $"  File:\t{filePath}\tLines:{lines}{Environment.NewLine}" +
-                $"  Caller:\t{memberName}\tElapsedTime:\t{TimeSpan.FromMilliseconds(elapsedMilliseconds)} ms{Environment.NewLine}" +
-                $"  CarryObject:\t{carryObj?.ToString()}{Environment.NewLine}";
+                $"  Caller:\t{memberName}\tElapsed Time:\t{TimeSpan.FromMilliseconds(elapsedMilliseconds)}{Environment.NewLine}" +
+                $"  Carry Object:\t{carryObj?.ToString()}{Environment.NewLine}" +
+                $"  Run Under:\t{Environment.OSVersion} {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}{Environment.NewLine}";
         }
 
         public static void Reset(object carryObj, string callerFilePath, int callerLineNumber, string callerMemberName)
