@@ -8,7 +8,7 @@ PerfProbe is a performance testing utility. It's very easy to use.
 
 ### UseConsoleOutput （Default）
 
-Just use Perf.Set () to mark the rows you want to test.
+Just use **Perf.Set ()** to mark the rows you want to test.
 
 For example, write the following code and run it.
 
@@ -37,14 +37,22 @@ namespace PerfProbeApp
 Console output:
 
 > PerfProbe       at  2020/1/7 8:05:55    (Thread:1)
->   File: Program.cs      Lines:[12,14)
->   Caller:       Main    ElapsedTime:    00:00:01 ms
->   CarryObject:
+>
+> File: Program.cs      Lines:[12,14)
+>
+> Caller:       Main    ElapsedTime:    00:00:01
+>
+> CarryObject:
+>
+> 
 >
 > PerfProbe       at  2020/1/7 8:05:57    (Thread:1)
->   File: Program.cs      Lines:[14,16)
->   Caller:       Main    ElapsedTime:    00:00:02.0010000 ms
->   CarryObject:
+>
+> File: Program.cs      Lines:[14,16)
+>
+> Caller:       Main    ElapsedTime:    00:00:02.0010000
+>
+> CarryObject:
 
 
 
