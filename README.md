@@ -36,22 +36,14 @@ namespace PerfProbeApp
 
 Console output:
 
-> PerfProbe       at  2020/1/7 8:05:55    (Thread:1)
->
-> File: Program.cs      Lines:[12,14)
->
-> Caller:       Main    ElapsedTime:    00:00:01
->
+> PerfProbe       at  2020/1/7 8:05:55    (Thread:1)  
+> File: Program.cs      Lines:[12,14)  
+> Caller:       Main    ElapsedTime:    00:00:01  
 > CarryObject:
 >
-> 
->
-> PerfProbe       at  2020/1/7 8:05:57    (Thread:1)
->
-> File: Program.cs      Lines:[14,16)
->
-> Caller:       Main    ElapsedTime:    00:00:02.0010000
->
+> PerfProbe       at  2020/1/7 8:05:57    (Thread:1)  
+> File: Program.cs      Lines:[14,16)  
+> Caller:       Main    ElapsedTime:    00:00:02.0010000  
 > CarryObject:
 
 
