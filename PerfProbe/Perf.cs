@@ -18,7 +18,7 @@ namespace PerfProbe
         [ThreadStatic] public static string CallerMemberName;
         [ThreadStatic] public static string CallerFilePath;
         [ThreadStatic] public static int CallerLineNumber;
-        public static TypeLockParser LockParser = new TypeLockParser(nameof(Perf));
+        public static TypeLockParser FileHandlerLockParser = new TypeLockParser(nameof(Perf));
 
         public delegate void HandlerDelegate(object carryObj, string filePath, string lines, string memberName, long elapsedMilliseconds);
         public static void Register(HandlerDelegate handler)
@@ -35,7 +35,7 @@ namespace PerfProbe
         {
             void ret(object carryObj, string filePath, string lines, string memberName, long elapsedMilliseconds)
             {
-                using (LockParser.Parse<PerfLockType>().Begin())
+                using (FileHandlerLockParser.Parse<PerfLockType>().Begin())
                 {
                     using (var stream = new FileStream(file, FileMode.Append, FileAccess.Write))
                     using (var writer = new StreamWriter(stream))
@@ -57,7 +57,7 @@ namespace PerfProbe
             var threadId = Thread.CurrentThread.ManagedThreadId;
 
             return
-                $"PerfProbe\tat  {now}\t(Thread:{threadId}){Environment.NewLine}" +
+                $"PerfProbe\tat  {now}\t(Thread: {threadId}){Environment.NewLine}" +
                 $"  File:\t{filePath}\tLines:{lines}{Environment.NewLine}" +
                 $"  Caller:\t{memberName}\tElapsed Time:\t{TimeSpan.FromMilliseconds(elapsedMilliseconds)}{Environment.NewLine}" +
                 $"  Carry Object:\t{carryObj?.ToString()}{Environment.NewLine}" +
