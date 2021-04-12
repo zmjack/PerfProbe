@@ -12,62 +12,36 @@ namespace PerfProbe.Test
         public void ConsoleTest()
         {
             Perf.UseConsole();
+            Perf.UseUdpClient("127.0.0.1", 26778);
 
             using (ConsoleAgent.Begin())
             {
                 Perf.Set();
                 Thread.Sleep(1000);
-                Perf.Set();
+                Perf.Set("P2");
                 Thread.Sleep(2000);
                 Perf.End();
 
                 var output = ConsoleAgent.ReadAllText();
 
-                Assert.True(output.IsMatch(new Regex(@"PerfProbe\tat  .+?\t\(Thread: \d+\)
-  File:	.+?PerfProbe.Test\\UnitTest1.cs\tLines:\[18,20\)
-  Caller:\tConsoleTest\tElapsed Time:\t.+?
-  Carry Object:\t.*?
-  Run Under:\t.*?
+                Assert.True(output.IsMatch(new Regex(@"PerfProbe at  \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}  \(Thread: \d+\)
+  File    : .+?PerfProbe.Test\\UnitTest1.cs
+  Lines   : \[19,21\)
+  Caller  : ConsoleTest
+  Elapsed : .+?
+  Carry   : \(null\)
+  Under   : .*?
 
-PerfProbe\tat  .+?\t\(Thread: \d+\)
-  File:	.+?PerfProbe.Test\\UnitTest1.cs\tLines:\[20,22\)
-  Caller:\tConsoleTest\tElapsed Time:\t.+?
-  Carry Object:\t.*?
-  Run Under:\t.*?
+PerfProbe at  \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}  \(Thread: \d+\)
+  File    : .+?PerfProbe.Test\\UnitTest1.cs
+  Lines   : \[21,23\)
+  Caller  : ConsoleTest
+  Elapsed : .+?
+  Carry   : P2
+  Under   : .*?
 
 ")));
             }
-        }
-
-        [Fact]
-        public void FileTest()
-        {
-            var file = "PerfProbeOutput.txt";
-            File.WriteAllText(file, "");
-
-            Perf.UseFile(file);
-
-            Perf.Set();
-            Thread.Sleep(1000);
-            Perf.Set();
-            Thread.Sleep(2000);
-            Perf.End();
-
-            var content = File.ReadAllText(file);
-
-            Assert.True(content.IsMatch(new Regex(@"PerfProbe\tat  .+?\t\(Thread: \d+\)
-  File:	.+?PerfProbe.Test\\UnitTest1.cs\tLines:\[50,52\)
-  Caller:\tFileTest\tElapsed Time:\t.+?
-  Carry Object:\t.*?
-  Run Under:\t.*?
-
-PerfProbe\tat  .+?\t\(Thread: \d+\)
-  File:	.+?PerfProbe.Test\\UnitTest1.cs\tLines:\[52,54\)
-  Caller:\tFileTest\tElapsed Time:\t.+?
-  Carry Object:\t.*?
-  Run Under:\t.*?
-
-")));
         }
 
     }

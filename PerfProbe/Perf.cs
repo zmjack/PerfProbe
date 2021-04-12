@@ -1,7 +1,10 @@
-﻿using NStandard.Locks;
+﻿using NStandard;
+using NStandard.Locks;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -11,7 +14,7 @@ namespace PerfProbe
 
     public static class Perf
     {
-        public static event HandlerDelegate OnHandle;
+        public static event HandleDelegate OnHandle;
 
         [ThreadStatic] private static Stopwatch Stopwatch;
         [ThreadStatic] private static object CarryObject;
@@ -19,65 +22,64 @@ namespace PerfProbe
         [ThreadStatic] private static string CallerFilePath;
         [ThreadStatic] private static int CallerLineNumber;
 
-        public delegate void HandlerDelegate(object carryObj, string filePath, string lines, string memberName, long elapsedMilliseconds);
+        public delegate void HandleDelegate(PerfResult result);
 
-        private static void ConsoleHandle(object carryObj, string filePath, string lines, string memberName, long elapsedMilliseconds)
+        private static void ConsoleHandle(PerfResult result)
         {
-            Console.WriteLine(GetDefaultOutputString(carryObj, filePath, lines, memberName, elapsedMilliseconds));
+            Console.WriteLine(result.Content);
         }
 
         private static readonly TypeLockParser FileHandlerLockParser = new TypeLockParser(nameof(Perf));
-        private static HandlerDelegate BuildFileHandler(string file)
+        private static HandleDelegate BuildFileHandler(string file)
         {
-            void ret(object carryObj, string filePath, string lines, string memberName, long elapsedMilliseconds)
+            void ret(PerfResult result)
             {
                 using (FileHandlerLockParser.Parse<PerfLockType>().Begin())
                 {
                     using (var stream = new FileStream(file, FileMode.Append, FileAccess.Write))
                     using (var writer = new StreamWriter(stream))
                     {
-                        writer.WriteLine(GetDefaultOutputString(carryObj, filePath, lines, memberName, elapsedMilliseconds));
+                        writer.WriteLine(result.Content);
                     }
                 }
             }
+            return ret;
+        }
 
+        private static HandleDelegate BuildUdpHandler(IPEndPoint remote)
+        {
+            var udpClient = new UdpClient(new IPEndPoint(IPAddress.Any, 0));
+            void ret(PerfResult result)
+            {
+                var bytes = result.Content.Bytes();
+                udpClient.Send(bytes, bytes.Length, remote);
+            }
             return ret;
         }
 
         public static void UseConsole() => OnHandle += ConsoleHandle;
         public static void UseFile(string file) => OnHandle += BuildFileHandler(file);
+        public static void UseUdpClient(IPEndPoint remote) => OnHandle += BuildUdpHandler(remote);
+        public static void UseUdpClient(string ipString, int port) => OnHandle += BuildUdpHandler(new IPEndPoint(IPAddress.Parse(ipString), port));
 
-        private static string GetDefaultOutputString(object carryObj, string filePath, string lines, string memberName, long elapsedMilliseconds)
-        {
-            var now = DateTime.Now;
-            var threadId = Thread.CurrentThread.ManagedThreadId;
-
-            return
-                $"PerfProbe\tat  {now}\t(Thread: {threadId}){Environment.NewLine}" +
-                $"  File:\t{filePath}\tLines:{lines}{Environment.NewLine}" +
-                $"  Caller:\t{memberName}\tElapsed Time:\t{TimeSpan.FromMilliseconds(elapsedMilliseconds)}{Environment.NewLine}" +
-                $"  Carry Object:\t{carryObj?.ToString()}{Environment.NewLine}" +
-                $"  Run Under:\t{Environment.OSVersion} {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}{Environment.NewLine}";
-        }
-
-        private static void Reset(object carryObj, string callerFilePath, int callerLineNumber, string callerMemberName)
+        private static void Reset(object carry, string callerFilePath, int callerLineNumber, string callerMemberName)
         {
             Stopwatch = new Stopwatch();
-            CarryObject = carryObj;
+            CarryObject = carry;
             CallerFilePath = callerFilePath;
             CallerLineNumber = callerLineNumber;
             CallerMemberName = callerMemberName;
             Stopwatch.Start();
         }
 
-        public static void Set(object carryObj = null,
+        public static void Set(object carry = null,
             [CallerFilePath] string callerFilePath = "",
             [CallerLineNumber] int callerLineNumber = 0,
             [CallerMemberName] string callerMemberName = "")
         {
             void reset()
             {
-                Reset(carryObj, callerFilePath, callerLineNumber, callerMemberName);
+                Reset(carry, callerFilePath, callerLineNumber, callerMemberName);
             }
 
             if (Stopwatch is null) reset();
@@ -108,7 +110,32 @@ namespace PerfProbe
 
         private static void Handle(int callerLineNumber)
         {
-            OnHandle?.Invoke(CarryObject, CallerFilePath, $"[{CallerLineNumber},{callerLineNumber})", CallerMemberName, Stopwatch.ElapsedMilliseconds);
+            var parameters = new PerfParameters
+            {
+                TimeAt = DateTime.Now,
+                ManagedThreadId = Thread.CurrentThread.ManagedThreadId,
+                CarryObject = CarryObject,
+                FilePath = CallerFilePath,
+                StartLineNumber = CallerLineNumber,
+                StopLineNumber = callerLineNumber,
+                MemberName = CallerMemberName,
+                Elapsed = Stopwatch.Elapsed,
+            };
+
+            var content =
+                $"PerfProbe at  {parameters.TimeAt:yyyy/MM/dd HH:mm:ss}  (Thread: {parameters.ManagedThreadId}){Environment.NewLine}" +
+                $"  File    : {parameters.FilePath}{Environment.NewLine}" +
+                $"  Lines   : [{parameters.StartLineNumber},{parameters.StopLineNumber}){Environment.NewLine}" +
+                $"  Caller  : {parameters.MemberName}{Environment.NewLine}" +
+                $"  Elapsed : {parameters.Elapsed}{Environment.NewLine}" +
+                $"  Carry   : {parameters.CarryObject?.ToString() ?? "(null)"}{Environment.NewLine}" +
+                $"  Under   : {Environment.OSVersion} {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}{Environment.NewLine}";
+
+            OnHandle?.Invoke(new PerfResult
+            {
+                Parameters = parameters,
+                Content = content,
+            });
         }
 
     }
