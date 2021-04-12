@@ -1,14 +1,14 @@
 # PerfProbe
 
-PerfProbe is a performance testing utility. It's very easy to use.
+**PerfProbe** is a performance testing utility.
 
 
 
 ## How to use
 
-### UseConsoleOutput （Default）
+### UseConsole
 
-Just use **Perf.Set ()** to mark the rows you want to test.
+Just use **Perf.Set()** to mark the rows you want to test.
 
 For example, write the following code and run it.
 
@@ -22,7 +22,7 @@ namespace PerfProbeApp
     {
         static void Main(string[] args)
         {
-            Perf.UseConsoleOutput();
+            Perf.UseConsole();
 
             Perf.Set();
             Thread.Sleep(1000);
@@ -48,9 +48,9 @@ Console output:
 
 
 
-### UseFileStorage
+### UseFile
 
-If you want save the output to a file, you only need call **Perf.UseFileStorage()** before using **Perf.Set()**.
+If you want save the output to a file, you only need call **Perf.UseFile()** before using **Perf.Set()**.
 
 For example, write the following code and run it.
 
@@ -64,7 +64,7 @@ namespace PerfProbeApp
     {
         static void Main(string[] args)
         {
-            Perf.UseFileStorage("PerfProbeOutput.txt");
+            Perf.UseFile("PerfProbeOutput.txt");
 
             Perf.Set();
             Thread.Sleep(1000);
