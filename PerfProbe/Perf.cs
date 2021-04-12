@@ -11,27 +11,23 @@ namespace PerfProbe
 
     public static class Perf
     {
-        public static HandlerDelegate Handler { get; private set; } = DefaultHandler;
+        public static event HandlerDelegate OnHandle;
 
         [ThreadStatic] private static Stopwatch Stopwatch;
-        [ThreadStatic] public static object CarryObject;
-        [ThreadStatic] public static string CallerMemberName;
-        [ThreadStatic] public static string CallerFilePath;
-        [ThreadStatic] public static int CallerLineNumber;
-        public static TypeLockParser FileHandlerLockParser = new TypeLockParser(nameof(Perf));
+        [ThreadStatic] private static object CarryObject;
+        [ThreadStatic] private static string CallerMemberName;
+        [ThreadStatic] private static string CallerFilePath;
+        [ThreadStatic] private static int CallerLineNumber;
 
         public delegate void HandlerDelegate(object carryObj, string filePath, string lines, string memberName, long elapsedMilliseconds);
-        public static void Register(HandlerDelegate handler)
-        {
-            Handler = handler;
-        }
 
-        public static void DefaultHandler(object carryObj, string filePath, string lines, string memberName, long elapsedMilliseconds)
+        private static void ConsoleHandle(object carryObj, string filePath, string lines, string memberName, long elapsedMilliseconds)
         {
             Console.WriteLine(GetDefaultOutputString(carryObj, filePath, lines, memberName, elapsedMilliseconds));
         }
 
-        public static HandlerDelegate BuildFileHandler(string file)
+        private static readonly TypeLockParser FileHandlerLockParser = new TypeLockParser(nameof(Perf));
+        private static HandlerDelegate BuildFileHandler(string file)
         {
             void ret(object carryObj, string filePath, string lines, string memberName, long elapsedMilliseconds)
             {
@@ -48,10 +44,10 @@ namespace PerfProbe
             return ret;
         }
 
-        public static void UseConsoleOutput() => Handler = DefaultHandler;
-        public static void UseFileStorage(string file) => Handler = BuildFileHandler(file);
+        public static void UseConsole() => OnHandle += ConsoleHandle;
+        public static void UseFile(string file) => OnHandle += BuildFileHandler(file);
 
-        public static string GetDefaultOutputString(object carryObj, string filePath, string lines, string memberName, long elapsedMilliseconds)
+        private static string GetDefaultOutputString(object carryObj, string filePath, string lines, string memberName, long elapsedMilliseconds)
         {
             var now = DateTime.Now;
             var threadId = Thread.CurrentThread.ManagedThreadId;
@@ -64,7 +60,7 @@ namespace PerfProbe
                 $"  Run Under:\t{Environment.OSVersion} {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}{Environment.NewLine}";
         }
 
-        public static void Reset(object carryObj, string callerFilePath, int callerLineNumber, string callerMemberName)
+        private static void Reset(object carryObj, string callerFilePath, int callerLineNumber, string callerMemberName)
         {
             Stopwatch = new Stopwatch();
             CarryObject = carryObj;
@@ -90,7 +86,7 @@ namespace PerfProbe
                 if (CallerFilePath == callerFilePath && CallerLineNumber < callerLineNumber)
                 {
                     Stopwatch.Stop();
-                    Handler(CarryObject, CallerFilePath, $"[{CallerLineNumber},{callerLineNumber})", CallerMemberName, Stopwatch.ElapsedMilliseconds);
+                    Handle(callerLineNumber);
                     reset();
                     Stopwatch.Reset();
                     Stopwatch.Start();
@@ -101,14 +97,18 @@ namespace PerfProbe
 
         public static void End([CallerLineNumber] int callerLineNumber = 0)
         {
-            if (Stopwatch is null)
-                throw new InvalidOperationException("PerfProbe.Set must be called before calling the method ");
+            if (Stopwatch is null) throw new InvalidOperationException("PerfProbe.Set must be called before calling the method ");
             else
             {
                 Stopwatch.Stop();
-                Handler(CarryObject, CallerFilePath, $"[{CallerLineNumber},{callerLineNumber})", CallerMemberName, Stopwatch.ElapsedMilliseconds);
+                Handle(callerLineNumber);
                 Stopwatch = null;
             }
+        }
+
+        private static void Handle(int callerLineNumber)
+        {
+            OnHandle?.Invoke(CarryObject, CallerFilePath, $"[{CallerLineNumber},{callerLineNumber})", CallerMemberName, Stopwatch.ElapsedMilliseconds);
         }
 
     }

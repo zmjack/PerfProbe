@@ -11,7 +11,7 @@ namespace PerfProbe.Test
         [Fact]
         public void ConsoleTest()
         {
-            Perf.UseConsoleOutput();
+            Perf.UseConsole();
 
             using (ConsoleAgent.Begin())
             {
@@ -45,7 +45,7 @@ PerfProbe\tat  .+?\t\(Thread: \d+\)
             var file = "PerfProbeOutput.txt";
             File.WriteAllText(file, "");
 
-            Perf.UseFileStorage(file);
+            Perf.UseFile(file);
 
             Perf.Set();
             Thread.Sleep(1000);
