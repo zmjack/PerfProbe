@@ -13,7 +13,7 @@ namespace PerfProbe.Test
         {
             Perf.UseConsoleOutput();
 
-            using (var agent = new ConsoleAgent())
+            using (ConsoleAgent.Begin())
             {
                 Perf.Set();
                 Thread.Sleep(1000);
@@ -21,7 +21,7 @@ namespace PerfProbe.Test
                 Thread.Sleep(2000);
                 Perf.End();
 
-                var output = agent.ReadAllText();
+                var output = ConsoleAgent.ReadAllText();
 
                 Assert.True(output.IsMatch(new Regex(@"PerfProbe\tat  .+?\t\(Thread: \d+\)
   File:	.+?PerfProbe.Test\\UnitTest1.cs\tLines:\[18,20\)

@@ -12,12 +12,8 @@
     <RepositoryUrl>https://github.com/zmjack/PerfProbe.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NStandard" Version="0.1.6" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\LICENSE.md">
@@ -28,6 +24,10 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NStandard" Version="0.6.13" />
   </ItemGroup>
 
 </Project>
