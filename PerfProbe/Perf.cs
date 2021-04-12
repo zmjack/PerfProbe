@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace PerfProbe
 {
-    public class PerfLockType { }
+    internal class PerfLockType { }
 
     public static class Perf
     {
@@ -29,7 +29,7 @@ namespace PerfProbe
             Console.WriteLine(result.Content);
         }
 
-        private static readonly TypeLockParser FileHandlerLockParser = new TypeLockParser(nameof(Perf));
+        private static readonly TypeLockParser FileHandlerLockParser = new(nameof(Perf));
         private static HandleDelegate BuildFileHandler(string file)
         {
             void ret(PerfResult result)
