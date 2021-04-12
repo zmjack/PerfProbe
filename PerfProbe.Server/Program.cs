@@ -13,9 +13,12 @@ namespace PerfProbe.Server
 
         static void Main(string[] args)
         {
-            var semaphore = new Semaphore(0, 1);
             UdpClient.BeginReceive(new AsyncCallback(ReceiveCallback), null);
-            semaphore.WaitOne();
+            while (true)
+            {
+                var key = Console.ReadKey().Key;
+                if (key == ConsoleKey.Escape) return;
+            }
         }
 
         public static void ReceiveCallback(IAsyncResult ar)
