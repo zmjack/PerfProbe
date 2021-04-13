@@ -11,4 +11,8 @@
     <ErrorReport>none</ErrorReport>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Ink" Version="0.7.0" />
+  </ItemGroup>
+
 </Project>

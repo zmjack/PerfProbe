@@ -1,23 +1,36 @@
-﻿using System;
+﻿using Ink;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 
 namespace PerfProbe.Server
 {
     class Program
     {
-        private static readonly UdpClient UdpClient = new(26778);
+        private static UdpClient UdpClient;
         private static IPEndPoint Remote = new(IPAddress.Any, 0);
 
         static void Main(string[] args)
         {
-            UdpClient.BeginReceive(new AsyncCallback(ReceiveCallback), null);
-            while (true)
+            Echo.Ask("Input PerfProbe port (Default: 26778):", out int port, 26778);
+
+            try
             {
-                var key = Console.ReadKey().Key;
-                if (key == ConsoleKey.Escape) return;
+                UdpClient = new UdpClient(port);
+                Console.WriteLine($"PerfProbe port: {port,-5}  (Press [Esc] to exit)");
+                Console.WriteLine();
+                UdpClient.BeginReceive(new AsyncCallback(ReceiveCallback), null);
+                while (true)
+                {
+                    var key = Console.ReadKey(true).Key;
+                    if (key == ConsoleKey.Escape) return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"PerfProbe error: {ex.Message}");
+                Echo.PressContinue();
             }
         }
 
