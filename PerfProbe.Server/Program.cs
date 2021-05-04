@@ -8,20 +8,18 @@ namespace PerfProbe.Server
 {
     class Program
     {
+        private static int Port;
         private static UdpClient UdpClient;
         private static IPEndPoint Remote = new(IPAddress.Any, 0);
 
         static void Main(string[] args)
         {
-            Echo.Ask("Input PerfProbe port (Default: 26778):", out int port, 26778);
+            Echo.Ask("Input PerfProbe port (Default: 26778):", out Port, 26778);
 
             try
             {
-                UdpClient = new UdpClient(port);
-                Echo.Line($"PerfProbe port: {port,-5}")
-                    .Line($"  - Press [Enter] to clear.")
-                    .Line($"  - Press [Esc] to exit.");
-                Console.WriteLine();
+                UdpClient = new UdpClient(Port);
+                PrintInfo();
                 UdpClient.BeginReceive(new AsyncCallback(ReceiveCallback), null);
 
                 while (true)
@@ -32,7 +30,11 @@ namespace PerfProbe.Server
                         Echo.AskYN("Exit?", out var exit);
                         if (exit) return;
                     }
-                    else if (key == ConsoleKey.Enter) Console.Clear();
+                    else if (key == ConsoleKey.Enter)
+                    {
+                        Console.Clear();
+                        PrintInfo();
+                    }
                 }
             }
             catch (Exception ex)
@@ -42,7 +44,15 @@ namespace PerfProbe.Server
             }
         }
 
-        public static void ReceiveCallback(IAsyncResult ar)
+        static void PrintInfo()
+        {
+            Echo.Line($"PerfProbe port: {Port,-5}")
+                .Line($"  - Press [Enter] to clear.")
+                .Line($"  - Press [Esc] to exit.")
+                .Line();
+        }
+
+        static void ReceiveCallback(IAsyncResult ar)
         {
             var bytes = UdpClient.EndReceive(ar, ref Remote);
             var str = Encoding.UTF8.GetString(bytes);
