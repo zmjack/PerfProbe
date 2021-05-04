@@ -24,6 +24,13 @@ namespace PerfProbe
 
         public delegate void HandleDelegate(PerfResult result);
 
+        public static void ClearHandlers()
+        {
+            if (OnHandle == null) return;
+            var delegates = OnHandle.GetInvocationList();
+            foreach (var del in delegates) OnHandle -= del as HandleDelegate;
+        }
+
         private static void ConsoleHandle(PerfResult result)
         {
             Console.WriteLine(result.Content);
