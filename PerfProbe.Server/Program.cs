@@ -18,13 +18,21 @@ namespace PerfProbe.Server
             try
             {
                 UdpClient = new UdpClient(port);
-                Console.WriteLine($"PerfProbe port: {port,-5}  (Press [Esc] to exit)");
+                Echo.Line($"PerfProbe port: {port,-5}")
+                    .Line($"  - Press [Enter] to clear.")
+                    .Line($"  - Press [Esc] to exit.");
                 Console.WriteLine();
                 UdpClient.BeginReceive(new AsyncCallback(ReceiveCallback), null);
+
                 while (true)
                 {
                     var key = Console.ReadKey(true).Key;
-                    if (key == ConsoleKey.Escape) return;
+                    if (key == ConsoleKey.Escape)
+                    {
+                        Echo.AskYN("Exit?", out var exit);
+                        if (exit) return;
+                    }
+                    else if (key == ConsoleKey.Enter) Console.Clear();
                 }
             }
             catch (Exception ex)
