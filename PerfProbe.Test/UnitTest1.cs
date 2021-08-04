@@ -10,7 +10,7 @@ namespace PerfProbe.Test
         [Fact]
         public void ConsoleTest()
         {
-            Perf.UseConsole();
+            Perf.UseVerboseConsole();
             Perf.UseUdpClient("127.0.0.1", 26778);
 
             using (ConsoleAgent.Begin())
@@ -25,7 +25,7 @@ namespace PerfProbe.Test
 
                 Assert.True(output.IsMatch(new Regex(@"PerfProbe at  \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}  \(Thread: \d+\)
   File    : .+?PerfProbe.Test\\UnitTest1.cs
-  Lines   : \[19,21\)
+  Lines   : \[18,20\)
   Caller  : ConsoleTest
   Elapsed : .+?
   Carry   : \(null\)
@@ -33,7 +33,7 @@ namespace PerfProbe.Test
 
 PerfProbe at  \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}  \(Thread: \d+\)
   File    : .+?PerfProbe.Test\\UnitTest1.cs
-  Lines   : \[21,23\)
+  Lines   : \[20,22\)
   Caller  : ConsoleTest
   Elapsed : .+?
   Carry   : P2

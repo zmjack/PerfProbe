@@ -26,43 +26,53 @@ namespace PerfProbe
 
         public static void ClearHandlers() => OnHandle = null;
 
-        private static void ConsoleHandle(PerfResult result)
+        private static HandleDelegate BuildConsoleHandle(bool verbose)
         {
-            Console.WriteLine(result.Content);
+            void Handle(PerfResult result)
+            {
+                var content = verbose ? result.GetVerboseContent() : result.GetContent();
+                Console.WriteLine(content);
+            }
+            return Handle;
         }
 
         private static readonly TypeLockParser FileHandlerLockParser = new(nameof(Perf));
-        private static HandleDelegate BuildFileHandler(string file)
+        private static HandleDelegate BuildFileHandler(bool verbose, string file)
         {
-            void ret(PerfResult result)
+            void Handle(PerfResult result)
             {
+                var content = verbose ? result.GetVerboseContent() : result.GetContent();
                 using (FileHandlerLockParser.Parse<PerfLockType>().Begin())
                 {
-                    using (var stream = new FileStream(file, FileMode.Append, FileAccess.Write))
-                    using (var writer = new StreamWriter(stream))
-                    {
-                        writer.WriteLine(result.Content);
-                    }
+                    using var stream = new FileStream(file, FileMode.Append, FileAccess.Write);
+                    using var writer = new StreamWriter(stream);
+                    writer.WriteLine(content);
                 }
             }
-            return ret;
+            return Handle;
         }
 
-        private static HandleDelegate BuildUdpHandler(IPEndPoint remote)
+        private static HandleDelegate BuildUdpHandler(bool verbose, IPEndPoint remote)
         {
             var udpClient = new UdpClient(new IPEndPoint(IPAddress.Any, 0));
-            void ret(PerfResult result)
+            void Handle(PerfResult result)
             {
-                var bytes = result.Content.Bytes();
+                var content = verbose ? result.GetVerboseContent() : result.GetContent();
+                var bytes = content.Bytes();
                 udpClient.Send(bytes, bytes.Length, remote);
             }
-            return ret;
+            return Handle;
         }
 
-        public static void UseConsole() => OnHandle += ConsoleHandle;
-        public static void UseFile(string file) => OnHandle += BuildFileHandler(file);
-        public static void UseUdpClient(IPEndPoint remote) => OnHandle += BuildUdpHandler(remote);
-        public static void UseUdpClient(string ipString, int port) => OnHandle += BuildUdpHandler(new IPEndPoint(IPAddress.Parse(ipString), port));
+        public static void UseConsole() => OnHandle += BuildConsoleHandle(false);
+        public static void UseFile(string file) => OnHandle += BuildFileHandler(false, file);
+        public static void UseUdpClient(IPEndPoint remote) => OnHandle += BuildUdpHandler(false, remote);
+        public static void UseUdpClient(string ipString, int port) => OnHandle += BuildUdpHandler(false, new IPEndPoint(IPAddress.Parse(ipString), port));
+
+        public static void UseVerboseConsole() => OnHandle += BuildConsoleHandle(true);
+        public static void UseVerboseFile(string file) => OnHandle += BuildFileHandler(true, file);
+        public static void UseVerboseUdpClient(IPEndPoint remote) => OnHandle += BuildUdpHandler(true, remote);
+        public static void UseVerboseUdpClient(string ipString, int port) => OnHandle += BuildUdpHandler(true, new IPEndPoint(IPAddress.Parse(ipString), port));
 
         private static void Reset(object carry, string callerFilePath, int callerLineNumber, string callerMemberName)
         {
@@ -133,11 +143,7 @@ namespace PerfProbe
                 $"  Carry   : {parameters.CarryObject?.ToString() ?? "(null)"}{Environment.NewLine}" +
                 $"  Under   : {Environment.OSVersion} {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}{Environment.NewLine}";
 
-            OnHandle?.Invoke(new PerfResult
-            {
-                Parameters = parameters,
-                Content = content,
-            });
+            OnHandle?.Invoke(new PerfResult { Parameters = parameters });
         }
 
     }
