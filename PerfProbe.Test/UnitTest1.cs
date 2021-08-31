@@ -21,9 +21,9 @@ namespace PerfProbe.Test
                 using (ConsoleAgent.Begin())
                 {
                     Perf.Set();
-                    Thread.Sleep(1000);
+                    Thread.Sleep(1);
                     Perf.Set("P2");
-                    Thread.Sleep(2000);
+                    Thread.Sleep(1);
                     Perf.End();
 
                     var output = ConsoleAgent.ReadAllText();
@@ -31,7 +31,7 @@ namespace PerfProbe.Test
                     Assert.True(output.IsMatch(new Regex(@"PerfProbe at  \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}  \(Thread: \d+\)
   File    : .+?PerfProbe.Test\\UnitTest1.cs
   Title   : \(null\)
-  Lines   : \d+~\d+
+  Lines   : \d+ ~ \d+
   Caller  : ConsoleTest
   Elapsed : \d{2}:\d{2}:\d{2}\.\d{7}
   Under   : .*?
@@ -39,7 +39,7 @@ namespace PerfProbe.Test
 PerfProbe at  \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}  \(Thread: \d+\)
   File    : .+?PerfProbe.Test\\UnitTest1.cs
   Title   : P2
-  Lines   : \d+~\d+
+  Lines   : \d+ ~ \d+
   Caller  : ConsoleTest
   Elapsed : \d{2}:\d{2}:\d{2}.\d{7}
   Under   : .*?
@@ -61,15 +61,15 @@ PerfProbe at  \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}  \(Thread: \d+\)
                 using (ConsoleAgent.Begin())
                 {
                     Perf.Set();
-                    Thread.Sleep(1000);
+                    Thread.Sleep(1);
                     Perf.Set("P2");
-                    Thread.Sleep(2000);
+                    Thread.Sleep(1);
                     Perf.End();
 
                     var output = ConsoleAgent.ReadAllText();
 
-                    Assert.True(output.IsMatch(new Regex(@"\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} #\d+ UnitTest1.cs \d+~\d+ \d{2}:\d{2}:\d{2}\.\d{7}
-\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} #\d+ UnitTest1.cs P2 \d{2}:\d{2}:\d{2}.\d{7}
+                    Assert.True(output.IsMatch(new Regex(@"\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} #\d+ UnitTest1.cs \( \d+ ~ \d+ \) \d{2}:\d{2}:\d{2}\.\d{7}
+\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} #\d+ UnitTest1.cs \( P2 \) \d{2}:\d{2}:\d{2}.\d{7}
 ")));
                 }
             }

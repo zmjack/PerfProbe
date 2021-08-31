@@ -3,6 +3,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace PerfProbe.Server
 {
@@ -11,10 +12,14 @@ namespace PerfProbe.Server
         private static int Port;
         private static UdpClient UdpClient;
         private static IPEndPoint Remote = new(IPAddress.Any, 0);
+        private static DateTime LastArrivalTime;
+        private static bool Separated = true;
+        private static Thread SeparateThread = new(Separate);
 
         static void Main(string[] args)
         {
             Echo.Ask("Input PerfProbe port (Default: 26778):", out Port, 26778);
+            SeparateThread.Start();
 
             try
             {
@@ -32,6 +37,7 @@ namespace PerfProbe.Server
                     }
                     else if (key == ConsoleKey.Enter)
                     {
+                        Separated = true;
                         Console.Clear();
                         PrintInfo();
                     }
@@ -46,7 +52,7 @@ namespace PerfProbe.Server
 
         static void PrintInfo()
         {
-            Echo.Line($"PerfProbe port: {Port,-5}")
+            Echo.Line($"PerfProbe port: {Port}")
                 .Line($"  - Press [Enter] to clear.")
                 .Line($"  - Press [Esc] to exit.")
                 .Line();
@@ -57,7 +63,22 @@ namespace PerfProbe.Server
             var bytes = UdpClient.EndReceive(ar, ref Remote);
             var str = Encoding.UTF8.GetString(bytes);
             Console.WriteLine(str);
+            LastArrivalTime = DateTime.Now;
+            Separated = false;
             UdpClient.BeginReceive(new AsyncCallback(ReceiveCallback), null);
+        }
+
+        static void Separate()
+        {
+            while (true)
+            {
+                if (!Separated && (DateTime.Now - LastArrivalTime).TotalSeconds >= 5)
+                {
+                    Console.WriteLine();
+                    Separated = true;
+                }
+                else Thread.Sleep(1000);
+            }
         }
 
     }
