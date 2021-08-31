@@ -6,7 +6,7 @@ namespace PerfProbe
     {
         public DateTime TimeAt { get; set; }
         public int ManagedThreadId { get; set; }
-        public object CarryObject { get; set; }
+        public string Title { get; set; }
         public string FilePath { get; set; }
         public int StartLineNumber { get; set; }
         public int StopLineNumber { get; set; }

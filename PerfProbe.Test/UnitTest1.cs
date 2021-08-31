@@ -7,39 +7,71 @@ namespace PerfProbe.Test
 {
     public class UnitTest1
     {
+        private static readonly object mutex = new object();
+
         [Fact]
         public void ConsoleTest()
         {
-            Perf.UseVerboseConsole();
-            Perf.UseUdpClient("127.0.0.1", 26778);
-
-            using (ConsoleAgent.Begin())
+            lock (mutex)
             {
-                Perf.Set();
-                Thread.Sleep(1000);
-                Perf.Set("P2");
-                Thread.Sleep(2000);
-                Perf.End();
+                Perf.ClearHandlers();
+                Perf.UseVerboseConsole();
+                Perf.UseUdpClient("127.0.0.1", 26778);
 
-                var output = ConsoleAgent.ReadAllText();
+                using (ConsoleAgent.Begin())
+                {
+                    Perf.Set();
+                    Thread.Sleep(1000);
+                    Perf.Set("P2");
+                    Thread.Sleep(2000);
+                    Perf.End();
 
-                Assert.True(output.IsMatch(new Regex(@"PerfProbe at  \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}  \(Thread: \d+\)
+                    var output = ConsoleAgent.ReadAllText();
+
+                    Assert.True(output.IsMatch(new Regex(@"PerfProbe at  \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}  \(Thread: \d+\)
   File    : .+?PerfProbe.Test\\UnitTest1.cs
-  Lines   : \[18,20\)
+  Title   : \(null\)
+  Lines   : \d+~\d+
   Caller  : ConsoleTest
-  Elapsed : .+?
-  Carry   : \(null\)
+  Elapsed : \d{2}:\d{2}:\d{2}\.\d{7}
   Under   : .*?
 
 PerfProbe at  \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}  \(Thread: \d+\)
   File    : .+?PerfProbe.Test\\UnitTest1.cs
-  Lines   : \[20,22\)
+  Title   : P2
+  Lines   : \d+~\d+
   Caller  : ConsoleTest
-  Elapsed : .+?
-  Carry   : P2
+  Elapsed : \d{2}:\d{2}:\d{2}.\d{7}
   Under   : .*?
 
 ")));
+                }
+            }
+        }
+
+        [Fact]
+        public void ConsoleTest2()
+        {
+            lock (mutex)
+            {
+                Perf.ClearHandlers();
+                Perf.UseConsole();
+                Perf.UseUdpClient("127.0.0.1", 26778);
+
+                using (ConsoleAgent.Begin())
+                {
+                    Perf.Set();
+                    Thread.Sleep(1000);
+                    Perf.Set("P2");
+                    Thread.Sleep(2000);
+                    Perf.End();
+
+                    var output = ConsoleAgent.ReadAllText();
+
+                    Assert.True(output.IsMatch(new Regex(@"\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} #\d+ UnitTest1.cs \d+~\d+ \d{2}:\d{2}:\d{2}\.\d{7}
+\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} #\d+ UnitTest1.cs P2 \d{2}:\d{2}:\d{2}.\d{7}
+")));
+                }
             }
         }
 

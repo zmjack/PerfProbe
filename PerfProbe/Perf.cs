@@ -17,7 +17,7 @@ namespace PerfProbe
         public static event HandleDelegate OnHandle;
 
         [ThreadStatic] private static Stopwatch Stopwatch;
-        [ThreadStatic] private static object CarryObject;
+        [ThreadStatic] private static string Title;
         [ThreadStatic] private static string CallerMemberName;
         [ThreadStatic] private static string CallerFilePath;
         [ThreadStatic] private static int CallerLineNumber;
@@ -74,24 +74,24 @@ namespace PerfProbe
         public static void UseVerboseUdpClient(IPEndPoint remote) => OnHandle += BuildUdpHandler(true, remote);
         public static void UseVerboseUdpClient(string ipString, int port) => OnHandle += BuildUdpHandler(true, new IPEndPoint(IPAddress.Parse(ipString), port));
 
-        private static void Reset(object carry, string callerFilePath, int callerLineNumber, string callerMemberName)
+        private static void Reset(string title, string callerFilePath, int callerLineNumber, string callerMemberName)
         {
             Stopwatch = new Stopwatch();
-            CarryObject = carry;
+            Title = title;
             CallerFilePath = callerFilePath;
             CallerLineNumber = callerLineNumber;
             CallerMemberName = callerMemberName;
             Stopwatch.Start();
         }
 
-        public static void Set(object carry = null,
+        public static void Set(string title = null,
             [CallerFilePath] string callerFilePath = "",
             [CallerLineNumber] int callerLineNumber = 0,
             [CallerMemberName] string callerMemberName = "")
         {
             void reset()
             {
-                Reset(carry, callerFilePath, callerLineNumber, callerMemberName);
+                Reset(title, callerFilePath, callerLineNumber, callerMemberName);
             }
 
             if (Stopwatch is null) reset();
@@ -126,23 +126,13 @@ namespace PerfProbe
             {
                 TimeAt = DateTime.Now,
                 ManagedThreadId = Thread.CurrentThread.ManagedThreadId,
-                CarryObject = CarryObject,
+                Title = Title,
                 FilePath = CallerFilePath,
                 StartLineNumber = CallerLineNumber,
                 StopLineNumber = callerLineNumber,
                 MemberName = CallerMemberName,
                 Elapsed = Stopwatch.Elapsed,
             };
-
-            var content =
-                $"PerfProbe at  {parameters.TimeAt:yyyy/MM/dd HH:mm:ss}  (Thread: {parameters.ManagedThreadId}){Environment.NewLine}" +
-                $"  File    : {parameters.FilePath}{Environment.NewLine}" +
-                $"  Lines   : [{parameters.StartLineNumber},{parameters.StopLineNumber}){Environment.NewLine}" +
-                $"  Caller  : {parameters.MemberName}{Environment.NewLine}" +
-                $"  Elapsed : {parameters.Elapsed}{Environment.NewLine}" +
-                $"  Carry   : {parameters.CarryObject?.ToString() ?? "(null)"}{Environment.NewLine}" +
-                $"  Under   : {Environment.OSVersion} {(Environment.Is64BitOperatingSystem ? "x64" : "x86")}{Environment.NewLine}";
-
             OnHandle?.Invoke(new PerfResult { Parameters = parameters });
         }
 
